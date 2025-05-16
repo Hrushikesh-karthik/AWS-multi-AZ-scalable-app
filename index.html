@@ -2,30 +2,54 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Flask CRUD App</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 </head>
 <body>
     <div class="container mt-5">
         <h2 class="text-center mb-4">Flask CRUD Application</h2>
-        
-        <!-- Direct Form Submission -->
-        <form action="http://<your-alb-url>:5000/users" method="POST">
-            <div class="mb-3">
-                <input type="text" name="name" class="form-control" placeholder="Enter Name" required>
-            </div>
-            <div class="mb-3">
-                <input type="email" name="email" class="form-control" placeholder="Enter Email" required>
-            </div>
-            <div class="mb-3">
-                <input type="text" name="phone" class="form-control" placeholder="Enter Phone" required>
-            </div>
-            <div class="mb-3">
-                <input type="text" name="address" class="form-control" placeholder="Enter Address" required>
-            </div>
-            <button type="submit" class="btn btn-primary">Add User</button>
+
+        <!-- Form to Add User -->
+        <form action="http://<ALB-DNS-Name>/users" method="POST">
+            <input type="text" name="name" class="form-control mb-2" placeholder="Enter Name" required>
+            <input type="email" name="email" class="form-control mb-2" placeholder="Enter Email" required>
+            <input type="text" name="phone" class="form-control mb-2" placeholder="Enter Phone" required>
+            <input type="text" name="address" class="form-control mb-2" placeholder="Enter Address" required>
+            <button class="btn btn-primary">Add User</button>
         </form>
+
+        <!-- User List Display -->
+        <div class="mt-5">
+            <h4>User List:</h4>
+            <ul id="userList" class="list-group"></ul>
+        </div>
     </div>
+
+    <script>
+        const apiUrl = "http://<ALB-DNS-Name>/users";
+
+        // Fetch and display users
+        async function loadUsers() {
+            const response = await fetch(apiUrl);
+            const users = await response.json();
+            const userList = document.getElementById('userList');
+            userList.innerHTML = '';
+            users.forEach(user => {
+                userList.innerHTML += `<li class='list-group-item'>
+                    ${user.name} - ${user.email} - ${user.phone} - ${user.address}
+                    <button onclick="deleteUser(${user.id})" class="btn btn-danger btn-sm float-end">Delete</button>
+                </li>`;
+            });
+        }
+
+        // Delete User
+        async function deleteUser(id) {
+            await fetch(`${apiUrl}/${id}`, { method: 'DELETE' });
+            loadUsers();
+        }
+
+        // Load users on page load
+        window.onload = loadUsers;
+    </script>
 </body>
 </html>
